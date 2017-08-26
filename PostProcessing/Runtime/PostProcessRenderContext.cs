@@ -7,7 +7,43 @@ namespace UnityEngine.Rendering.PostProcessing
         // The following should be filled by the render pipeline
 
         // Camera currently rendering
-        public Camera camera { get; set; }
+        private Camera m_camera;
+        public Camera camera
+        {
+            get
+            {
+                return this.m_camera;
+            }
+
+            set
+            {
+                this.m_camera = value;
+
+                if (XR.XRSettings.isDeviceActive)
+                {
+                    RenderTextureDescriptor xrDesc = XR.XRSettings.eyeTextureDesc;
+                    m_width = xrDesc.width;
+                    m_height = xrDesc.height;
+
+                    m_xrSinglePass = (xrDesc.vrUsage == VRTextureUsage.TwoEyes);
+
+                    if (camera.stereoActiveEye == Camera.MonoOrStereoscopicEye.Right)
+                        m_xrActiveEye = (int)Camera.StereoscopicEye.Right;
+
+                    if (m_xrSinglePass && (xrDesc.dimension != TextureDimension.Tex2DArray))
+                        m_xrSingleEyeWidth = m_width / 2;
+                    else
+                        m_xrSingleEyeWidth = m_width;
+                }
+                else
+                {
+                    m_width = m_camera.pixelWidth;
+                    m_height = m_camera.pixelHeight;
+                    m_xrSingleEyeWidth = m_width;
+                }
+            }
+        }
+
 
         // The command buffer to fill in
         public CommandBuffer command { get; set; }
@@ -41,15 +77,38 @@ namespace UnityEngine.Rendering.PostProcessing
         public object userData { get; set; }
 
         // Current camera width in pixels
+        private int m_width;
         public int width
         {
-            get { return camera.pixelWidth; }
+            get { return m_width; }
         }
 
         // Current camera height in pixels
+        private int m_height;
         public int height
         {
-            get { return camera.pixelHeight; }
+            get { return m_height; }
+        }
+
+        // Is XR running in single-pass stereo mode?
+        private bool m_xrSinglePass;
+        public bool xrSinglePass
+        {
+            get { return m_xrSinglePass; }
+        }
+
+        // Current active rendering eye (for XR)
+        private int m_xrActiveEye;
+        public int xrActiveEye
+        {
+            get { return m_xrActiveEye; }
+        }
+
+        // Current single eye width in pixels (for XR)
+        private int m_xrSingleEyeWidth;
+        public int singleEyeWidth
+        {
+            get { return m_xrSingleEyeWidth; }
         }
 
         // Are we currently rendering in the scene view?
@@ -64,7 +123,14 @@ namespace UnityEngine.Rendering.PostProcessing
 
         public void Reset()
         {
-            camera = null;
+            m_camera = null;
+            m_width = 0;
+            m_height = 0;
+
+            m_xrSinglePass = false;
+            m_xrActiveEye = (int)Camera.StereoscopicEye.Left;
+            m_xrSingleEyeWidth = 0;
+
             command = null;
             source = 0;
             destination = 0;

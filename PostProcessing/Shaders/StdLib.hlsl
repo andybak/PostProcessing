@@ -258,4 +258,6 @@ VaryingsDefault VertDefaultNoFlip(AttributesDefault v)
     return o;
 }
 
+#define TRANSFORM_TEX(tex,name) (tex.xy * name##_ST.xy + name##_ST.zw)
+
 #endif // UNITY_POSTFX_STDLIB
