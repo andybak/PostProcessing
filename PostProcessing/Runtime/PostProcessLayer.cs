@@ -602,11 +602,6 @@ namespace UnityEngine.Rendering.PostProcessing
                     }
                     else
                         temporalAntialiasing.ConfiguredJitteredProjectionMatrix(context);
-
-                    //var camera = context.camera;
-                    //camera.nonJitteredProjectionMatrix = camera.projectionMatrix;
-                    //camera.projectionMatrix = temporalAntialiasing.GetJitteredProjectionMatrix(camera);
-                    //camera.useJitteredProjectionMatrixForTransparentRendering = false;
                 }
 
                 var taaTarget = m_TargetPool.Get();
